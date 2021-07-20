@@ -1,8 +1,8 @@
+from Data.VolumeDesignGraph import VolumeDesignGraph
 from torch_geometric.data import Batch
 from torch_scatter import scatter_add, scatter, scatter_max
 import torch
 import copy
-from Data.VolumeDesignGraph import VolumeDesignGraph
 
 
 def detach_batch(batch):
@@ -19,46 +19,38 @@ def detach_batch(batch):
 
 
 def get_program_ratio(graph, att, mask, area_index_in_voxel_feature):
+    """
+    For each program type, we sum all the areas from the corresponding voxel nodes and obtain program weight.
+    We can then normalize it and compute FAR.
+    """
     device = att.get_device() if att.is_cuda else "cpu"
-    masked_voxel_weight = mask * graph.voxel_feature[:, area_index_in_voxel_feature].view(-1, 1)  # Nv x 1  if masked, area = 0
-    painted_voxel_weight = (att * torch.index_select(masked_voxel_weight, 0, graph.cross_edge_voxel_index_select))  # E x 1   after att *, area = area if painted the color
+    # Nv x 1  if voxel node is masked, area = 0; otherwise, area.
+    masked_voxel_weight = mask * graph.voxel_feature[:, area_index_in_voxel_feature].view(-1, 1)
+    # E x 1   put area values on the cross edge
+    painted_voxel_weight = (att * torch.index_select(masked_voxel_weight, 0, graph.cross_edge_voxel_index_select))
+    # Np x 1  sum of voxel node areas on the program node
     program_weight = scatter(src=painted_voxel_weight, index=graph.cross_edge_program_index_select, dim=0, dim_size=graph.program_class_feature.shape[0], reduce="sum")
+    # Sums the areas of program nodes for each type
     program_class_weight = scatter(src=program_weight, index=graph.program_class_cluster, dim=0, dim_size=graph.program_target_ratio.shape[0], reduce='sum')
+    # Sums the total area for each graph
     batch_sum = scatter_add(program_class_weight, graph.program_target_ratio_batch.to(device), dim=0, dim_size=graph.FAR.shape[0])[graph.program_target_ratio_batch]
+    # Normalize the program ratio in each graph
     normalized_program_class_weight = program_class_weight / (batch_sum + 1e-16)
-    # story_sum = scatter_add(src=program_weight, index=graph.program_floor_cluster, dim=0)[graph.program_floor_cluster]
-    # normalized_program_weight = program_weight / (story_sum+1e-16)
+    # Compute FAR
     FAR = scatter(src=program_class_weight, index=graph.program_target_ratio_batch, dim=0, dim_size=graph.FAR.shape[0], reduce="sum")
     return normalized_program_class_weight, program_weight, FAR
 
 
 def find_max_out_program_index(logit, cross_edge_voxel_index, cross_edge_program_index, num_of_voxels):
-    """To output max_out_program_index with dimension Nv x 1, we don't do mask"""
-    _, out_cross_edge_index = scatter_max(logit, index=cross_edge_voxel_index, dim=0, dim_size=num_of_voxels)  # This might included masked voxels
+    """ max_out_program_index (Nv x 1) is the program node index that each voxel node has the max attention. We also compute voxel nodes that are masked (mask["hard"])"""
+    _, out_cross_edge_index = scatter_max(logit, index=cross_edge_voxel_index, dim=0, dim_size=num_of_voxels)
     max_out_program_index = cross_edge_program_index[out_cross_edge_index]
-    return max_out_program_index
-
-
-def find_max_out_program_index_from_label(label, cross_edge_voxel_index_select, cross_edge_program_index_select, program_class_feature):
-    device = label.get_device() if label.is_cuda else "cpu"
-
-    """To output max_out_program_index with dimension Nv x 1, we don't do mask"""
-    voxel_node_id = torch.arange(0, label.shape[0], dtype=label.dtype, device=device)  # Nv x1
-    voxel_pair = torch.cat((voxel_node_id.view(-1, 1), label), dim=-1)  # (voxel_node_id, program_class_feature) Nv x 5
-    cross_edge_program_class_feature = torch.index_select(program_class_feature, 0, cross_edge_program_index_select)  # E x 1
-    cross_edge_pair = torch.cat((cross_edge_voxel_index_select.type(cross_edge_program_class_feature.dtype).view(-1, 1),
-                                 cross_edge_program_class_feature), dim=--1)  # (voxel_node_id, program_class_feature) Ex2
-
-    # find the index in cross_edge_pair that is equal to voxel_pair. cross_edge_program_index_select will be the program_index
-    voxel_pair_index, cross_edge_index = torch.where((cross_edge_pair.t() == voxel_pair.unsqueeze(-1)).all(dim=1))  # if not in voxel_pair_index, label = [0, 0, 0...]
-    max_out_program_index = torch.zeros((label.size(0)), dtype=cross_edge_voxel_index_select.dtype, device=device)
-    max_out_program_index[voxel_pair_index] = cross_edge_program_index_select.index_select(0, cross_edge_index)
     return max_out_program_index
 
 
 def unbatch_data_to_data_list(batch):
     """
-    Modified by torch_geometric.data.batch.to_data_list()  since the keys are not in order, so when calling __inc__ and number of nodes are queried,
+    Modified by torch_geometric.data.batch.to_data_list() since the keys are not in order, so when calling __inc__ and number of nodes are queried,
     error occurs because the node features might not be populated yet.
     The "xxx_batch" will be dropped in the output as in the data_list. You recreate them when making batches
     """
@@ -88,7 +80,10 @@ def unbatch_data_to_data_list(batch):
     return data_list
 
 
-def rebatch_data_for_multi_gpu(batch, device_ids, follow_batch):
+def rebatch_graph_for_multi_gpu(batch, device_ids, follow_batch):
+    """
+    Given a batch of data, split to multiple mini-batches.
+    """
     data_list = unbatch_data_to_data_list(batch)
     mini_batch_size = len(data_list)//len(device_ids)
     mini_batch_list, mini_batch_slices = [], [0]
@@ -98,14 +93,30 @@ def rebatch_data_for_multi_gpu(batch, device_ids, follow_batch):
     return mini_batch_list, mini_batch_slices
 
 
-def rebatch_input_for_multi_gpu(batch, device_ids, follow_batch, *args):
+def rebatch_for_multi_gpu(batch, device_ids, follow_batch, *args):
     """
-    split_by_program_node:  z noise
-    split_by_voxel_node:    out, mask_hard
-                            max_out_program_index
-    """
-    mini_batch_list, mini_batch_slices = rebatch_data_for_multi_gpu(batch, device_ids, follow_batch)
+    This function rebatches batched graphs(batch) and other information(*args) based on the given device/new_batch ids.
+    Return dimension [M batches x N features (list of batch and args)]
 
+    split_by_graph: FAR, class_weights
+    split_by_program_node:  z noise, program_weights
+    split_by_voxel_node:    out, mask_hard, max_out_program_index
+
+    example args: batch = batch, args = out, class_weights, program_weights, FAR, max_out_program_index
+    return
+        g: graph
+        ------------------
+        o: voxel label (n[type])
+        cw: (n[new_proportion] in global graph) -- program class ratio/weight
+        pw: (n[region_far] in local graph)
+        far: (g[far] in global graph)
+        pid: the selected program node id for each voxel node
+    """
+
+    # First rebatch the batched graphs
+    mini_batch_list, mini_batch_slices = rebatch_graph_for_multi_gpu(batch, device_ids, follow_batch)
+
+    # Then identify batching method for the args
     rebatch_type_key = []
     for arg in args:
         if arg.shape[0] == batch["FAR"].shape[0]:
@@ -119,6 +130,7 @@ def rebatch_input_for_multi_gpu(batch, device_ids, follow_batch, *args):
         else:
             raise ValueError("unknown input")
 
+    # Save to the output data structure
     ret, data = [], batch.__data_class__()
     for i, (device_id, mini_batch) in enumerate(zip(device_ids, mini_batch_list)):
         placeholder = [mini_batch]
@@ -126,18 +138,18 @@ def rebatch_input_for_multi_gpu(batch, device_ids, follow_batch, *args):
         for arg, key in zip(args, rebatch_type_key):
             mini_arg = arg.narrow(data.__cat_dim__(key, None), batch.__slices__[key][start], batch.__slices__[key][end] - batch.__slices__[key][start])
             placeholder.append(mini_arg)
-        try:  # the device_id is valid to place on GPUs
             placeholder = [ele.to(device_id) for ele in placeholder]
-        except:  # the device_id is invalid. Use case might be just unbatching batches and variable pairs
-            pass
         ret.append(tuple(placeholder))
     return ret
 
 
 def data_parallel(module, batch, _input, follow_batch, device_ids):
+    """
+    Reference code for multi-gpu setups. Not used in the this code repo
+    """
     output_device = device_ids[0]
     replicas = torch.nn.parallel.replicate(module, device_ids)
-    inputs = rebatch_input_for_multi_gpu(batch, device_ids, follow_batch, *_input)
+    inputs = rebatch_for_multi_gpu(batch, device_ids, follow_batch, *_input)
     replicas = replicas[:len(inputs)]
     outputs = torch.nn.parallel.parallel_apply(replicas, inputs)
     return torch.nn.parallel.gather(outputs, output_device)

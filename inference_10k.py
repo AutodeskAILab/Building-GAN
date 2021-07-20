@@ -26,7 +26,7 @@ from tensorboardX import SummaryWriter
 
 from torch_geometric.data import DataLoader, Batch
 
-from Model.models import Generator, Discriminator_Voxel  #, Discriminator_Program #latest model with LP, room dis
+from Model.models import Generator, DiscriminatorVoxel  #, Discriminator_Program #latest model with LP, room dis
 # from Model.models_ablation import Generator # with bf/pe/norm switch, for ablation
 # from Model.models_0216backup import Generator # for bf/pe (best model)
 # from Model.models_0216_b2 import Generator # pure base
@@ -180,7 +180,7 @@ for epoch in range(0, 3):
     os.mkdir(os.path.join(viz_dir, str(epoch)))
     os.mkdir(os.path.join(var_viz_dir1, str(epoch)))
     os.mkdir(os.path.join(var_viz_dir2, str(epoch)))
-    evaluate_new(test_data_loader, generator, args.raw_dir, os.path.join(viz_dir, str(epoch)), follow_batch, device_ids, number_of_batches=n_batches,trunc=trunc_num)
+    evaluate(test_data_loader, generator, args.raw_dir, os.path.join(viz_dir, str(epoch)), follow_batch, device_ids, number_of_batches=n_batches, trunc=trunc_num)
     generate_multiple_outputs_from_batch(variation_test_batch1, args.variation_num, generator, args.raw_dir, os.path.join(var_viz_dir1, str(epoch)), follow_batch, device_ids, trunc=trunc_num)
     generate_multiple_outputs_from_batch(variation_test_batch2, args.variation_num, generator, args.raw_dir, os.path.join(var_viz_dir2, str(epoch)), follow_batch, device_ids, trunc=trunc_num)
 
