@@ -28,9 +28,3 @@ for fname in os.listdir(global_graph_dir):
 
 print("Data processing completed")
 
-
-
-
-
-
-

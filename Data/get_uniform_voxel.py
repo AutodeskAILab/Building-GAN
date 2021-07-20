@@ -2,8 +2,6 @@ import torch
 import numpy as np
 from pathlib import Path
 import json
-import matplotlib.pyplot as plt
-from mpl_toolkits import mplot3d
 
 voxel_dir = "100KPretty-raw_data/voxel_data"
 uni_voxel_label_dir = "100KPretty-raw_data/uni_voxel_label"

@@ -1,7 +1,6 @@
 import json
 import os
 from Data.VolumeDesignGraph import VolumeDesignGraph
-from torch_geometric.data import DataLoader
 import torch
 from collections import Counter
 
@@ -42,7 +41,7 @@ class GraphConstructor:
 
         return GraphConstructor.tensorfy(program_graph, voxel_graph, data_id_str)
 
-    @staticmethod
+    @staticmethod  # not used
     def load_graph_from_UI(global_graph, local_graph, raw_voxel_graph, data_id):
         data_id_str = str(data_id).zfill(GraphConstructor.data_id_length)
 
@@ -69,7 +68,7 @@ class GraphConstructor:
         voxel_label = torch.FloatTensor(voxel_graph["voxel_label"])
         voxel_edge = torch.tensor(voxel_graph["voxel_edge"], dtype=torch.long)
 
-        # add index_select for attention (aggregate program nodes on the certain story to voxel node)
+        # add index_select for cross-edges
         pfc = program_grpah["program_floor_index"]
         program_node_id_in_story_group = []
         voxel_node_counter = Counter(voxel_graph["voxel_floor_index"])
@@ -103,19 +102,9 @@ class GraphConstructor:
                 assert(program_floor_index[program_node_id]) == story_id
             voxel_label_program_node_index.append(program_node_id)
 
-        # The old code which we assume each story has only one type
-        # for label, story_id in zip(voxel_graph["voxel_label"], voxel_graph["voxel_floor_index"]):
-        #     if not any(label):
-        #         voxel_label_program_node_index.append(-1)  # -1 if voxel node is not assigned to any program node. When mask, it becomes cumsum-1, but don't worry, we will mask
-        #     else:
-        #         # todo: change this if we have multiple
-        #         program_node_ids = [node_id for node_id in program_node_id_in_story_group[story_id] if program_grpah["program_class_feature"][node_id] == label]
-        #         assert(len(program_node_ids) == 1)
-        #         voxel_label_program_node_index.append(program_node_ids[0])
-        #     print("X")
         voxel_label_program_node_index = torch.tensor(voxel_label_program_node_index, dtype=torch.long)
 
-        # add voxel_edge_mask to extract edges across same story in voxel graph
+        # add voxel_edge_mask to extract edges across same story in voxel graph. This is not used.
         voxel_edge_mask = []
         for p1, p2 in zip(voxel_edge[0], voxel_edge[1]):
             voxel_edge_mask.append(1.0 if voxel_graph["voxel_floor_index"][p1] == voxel_graph["voxel_floor_index"][p2] else 0.0)
@@ -160,8 +149,6 @@ class GraphConstructor:
                 voxel_edge_dst.append(unicode_to_node_id_map[tuple(unicode_j)])
         voxel_edge = [voxel_edge_src, voxel_edge_dst]
 
-        # TODO: src dst to adjacency matrix
-
         return {
             "voxel_floor_index": voxel_floor_index,     # dict (F --> nodes in each floor)
             "voxel_projection_cluster": voxel_projection_cluster,  # N x 1
@@ -181,8 +168,7 @@ class GraphConstructor:
             # n is a dict. Keys: floor, type, type_id
             unicode = GraphConstructor.get_program_unicode(n)
             unicode_to_node_id_map[unicode] = i
-            # n["region_far"] is useless
-            # n["center"] is useless
+            # n["region_far"] and n["center"] are not used
 
             story_level_feature.append(n["floor"])
             program_class_feature.append(GraphConstructor.one_hot_vector(n["type"]))
@@ -232,10 +218,3 @@ class GraphConstructor:
             "unicode_to_node_id_map": unicode_to_node_id_map    # floor, type, type_id -> program node id
         }
 
-
-# # Tests data on 20, 59; Two story 9, 57
-# g1 = GraphConstructor.load_graph_jsons(9, "Chin-yi_viz")
-# g2 = GraphConstructor.load_graph_jsons(57, "Chin-yi_viz")
-# loader = DataLoader([g1, g2], batch_size=2, follow_batch=['program_target_ratio', 'program_class_feature', 'voxel_feature'])
-# batch = next(iter(loader))
-# print("END")

@@ -1,3 +1,6 @@
+"""
+I think you wrote this code. You want to take a look?
+"""
 from train_args import make_args
 args = make_args()
 # gpu_pci_str = "1, 2"  # multi-gpu version
@@ -13,24 +16,8 @@ from datetime import datetime
 current_time = datetime.now().strftime('%b%d_%H-%M-%S')
 
 from shutil import copyfile
-
-from datetime import datetime
-import numpy as np
-import shutil, psutil, sys
-import time
-import gc
-
-import torch
-from torch.autograd import Variable
-from tensorboardX import SummaryWriter
-
 from torch_geometric.data import DataLoader, Batch
-
-from Model.models import Generator, DiscriminatorVoxel  #, Discriminator_Program #latest model with LP, room dis
-# from Model.models_ablation import Generator # with bf/pe/norm switch, for ablation
-# from Model.models_0216backup import Generator # for bf/pe (best model)
-# from Model.models_0216_b2 import Generator # pure base
-
+from Model.models import Generator
 from util_eval import *
 from util_graph import *
 

@@ -1,4 +1,8 @@
-from GraphConstructor import GraphConstructor
+"""
+This code generates variation samples by fixing the graph data and varying the random variable z.
+"""
+
+from Data.GraphConstructor import GraphConstructor
 import os
 import json
 import torch
@@ -11,7 +15,7 @@ num_z = 10
 num_of_data = 1000
 data_dir = "./6types-raw_data/sum"
 output_dir = "./6types-processed-variation-v1-z10_data"
-os.mkdir((output_dir))
+os.mkdir(output_dir)
 
 raw_dir = "./6types-raw-variation-v1-z10_data"
 raw_voxel = raw_dir + "/voxel_data"
@@ -38,8 +42,6 @@ for data_id in range(num_of_data):
     voxel_graph_dir = os.path.join(voxel_dir, str(num_of_story), "voxel_data")
     for i in range(num_VG):
         with open(os.path.join(voxel_graph_dir, GraphConstructor.voxel_graph_prefix + str(i).zfill(GraphConstructor.data_id_length) + ".json")) as f:
-        # with open(os.path.join(data_dir, "voxel_data", GraphConstructor.voxel_graph_prefix + data_id_str + ".json")) as f: # For num_VG = 1
-
             raw_voxel_graph = json.load(f)
         voxel_graph = GraphConstructor.construct_voxel_graph(raw_voxel_graph)
 
