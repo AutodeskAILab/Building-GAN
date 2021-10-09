@@ -12,6 +12,11 @@ Data
 
 For detail about how the raw data are processed, please refer the `Data/process_data.py`.  
 
+In the dataset, each volumetric design comprises three json files:
+- Global Graph: contains the FAR, program ratios, and the associated rooms for each program type. 
+- Local Graph: contains the bubble diagram--the type and size of each room and the connectivity between rooms
+- Voxel: contains the voxel graph
+
 Running pretrained models
 ------
 ```
