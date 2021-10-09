@@ -3,7 +3,7 @@ Building-GAN
 
 Code and instructions for our paper:
 
-[Building-GAN: Graph-Conditioned Architectural Volumetric Design Generation](https://arxiv.org/abs/2104.13316), ICCV 2020.
+[Building-GAN: Graph-Conditioned Architectural Volumetric Design Generation](https://arxiv.org/abs/2104.13316), ICCV 2021.
 
 Data
 ------
