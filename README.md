@@ -9,7 +9,7 @@ Code and instructions for our paper:
 
 Volumetric Design
 -----
-<img src="https://github.com/AutodeskAILab/Building-GAN/blob/master/images/Volumetric_Desgin.png">
+<img src="https://github.com/AutodeskAILab/Building-GAN/blob/master/images/Volumetric_Design.png">
 
 Data
 ------
