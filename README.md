@@ -7,7 +7,9 @@ Code and instructions for our paper:
 
 <img src="https://github.com/AutodeskAILab/Building-GAN/blob/master/images/Building-GAN.png" width=80%>
 
-
+Volumetric Design
+-----
+<img src="https://github.com/AutodeskAILab/Building-GAN/blob/master/images/Volumetric_Design.png" width=100%>
 
 Data
 ------
