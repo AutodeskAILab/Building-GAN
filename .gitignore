@@ -5,6 +5,9 @@
 /Data/6types-raw_data__/
 /Data/6types-processed_data__/
 /Data/__pycache__/
+/Data/get_uniform_voxel_slices.py
+/Data/uniform_voxel_dataset_class.py
+/Data/6types-raw_data.zip
 /Model/__pycache__/
 /runs/*
 !/runs/iccv2021/

@@ -7,7 +7,7 @@ Code and instructions for our paper:
 
 Data
 ------
-- Download the dataset [here](). 
+- Download the dataset [here](https://building-gan-dataset.s3.us-west-2.amazonaws.com/v1/6types-raw_data.zip). 
 - Put the subfolders and files in `raw-data` under the folder `6types-raw_data`.
 - Run `Data/process_data.py` to process the raw data.
 
@@ -20,22 +20,17 @@ In the dataset, each volumetric design comprises three json files:
 
 Running pretrained models
 ------
-```
-TODO inference_test??
-```
 
-""
-For running a pretrained model check out the following steps:
-- Download the trained model [here](). 
-- Place them anywhere and rename the dataset to train_data.npy.
-- Set the path in variation_bbs_with_target_graph_segments_suppl.py to the path of the folder containing train_data.npy and to the pretrained model.
-- Run ***python variation_bbs_with_target_graph_segments_suppl.py***.
-- Check out the results in output folder.
+For running a pre-trained model, please follow the steps below:
+- The pre-trained model is located at `runs/iccv2021/checkpoints/`
+- Run ```python inference.py```
+- Check out the results in the `inference/{model}/{epch_current_time}/output` folder.
+- Check out the variation results from the same program graph in the `inference/{model}/{epch_current_time}/var_output*` folders.
 
 Training models
 ------
 
-For training a model from scratch check out the following steps:
+For training a model from scratch, please follow the steps below:
 - Follow the steps in Data section.
 - run ```python main.py ```. Customized arguments can be set according to ```train_args.py```. 
 - Check out ```output``` and ```checkpoints``` folders for intermediate outputs and checkpoints, respectively. They are under the ```runs/run_id/``` where run_id is the serial number of the
