@@ -176,6 +176,7 @@ class VoxelGNN_G(nn.Module):
     def __init__(self, input_dim, hidden_dim, noise_dim, layer_num):
         super(VoxelGNN_G, self).__init__()
         self.layer_num = layer_num
+        self.noise_dim = noise_dim
         self.register_buffer('pe', position_encoder(hidden_dim, 20))
         self.enc = MLP([input_dim - 3 + noise_dim, hidden_dim])
         self.block = VoxelBlock(hidden_dim, if_agg_story_in_update=True)
@@ -187,7 +188,7 @@ class VoxelGNN_G(nn.Module):
         cev=graph.cross_edge_voxel_index_select, vbi=graph.voxel_feature_batch, vfc=graph.voxel_floor_cluster, vfb=graph.voxel_feature_batch
         """
         pos, v = extract_pos(v)
-        v = self.enc(torch.cat((v, z), dim=-1))
+        v = self.enc(torch.cat((v, z), dim=-1)) if self.noise_dim != 0 else self.enc(v)
         v = v + self.pe[get_voxel_floor_level(vfc, vbi), :]
 
         _, _, v = self.attention(program_graph_feature=x, voxel_feature=v, cross_edge_program_index=cep, cross_edge_voxel_index=cev)

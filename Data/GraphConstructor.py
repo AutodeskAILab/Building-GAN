@@ -12,7 +12,7 @@ class GraphConstructor:
     global_graph_prefix = "graph_global_"
     local_graph_prefix = "graph_local_"
     voxel_graph_prefix = "voxel_"
-    data_id_length = 5
+    data_id_length = 6
 
     def __init__(self, ):
         pass

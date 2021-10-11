@@ -78,12 +78,16 @@ def evaluate(data_loader, generator, raw_dir, output_dir, follow_batch, device_i
         for i, g in enumerate(data_loader):
             if i >= number_of_batches:
                 break
-            z_shape = [g.program_class_feature.shape[0], generator.noise_dim]
-            z = torch.rand(tuple(z_shape)).to(device)
+            program_z_shape = [g.program_class_feature.shape[0], generator.noise_dim]
+            program_z = torch.rand(tuple(program_z_shape)).to(device)
+            voxel_z_shape = [g.voxel_feature.shape[0], generator.noise_dim]
+            voxel_z = torch.rand(tuple(voxel_z_shape)).to(device)
             if trunc < 1.0:
-                z.clamp_(min=-trunc, max=trunc)
+                program_z.clamp_(min=-trunc, max=trunc)
+                voxel_z.clamp_(min=-trunc, max=trunc)
 
-            out, soft_out, mask, att, max_out_program_index, pooled_program_feature_from_voxel = generator(g, z)
+            g.to(device)
+            out, soft_out, mask, att, max_out_program_index = generator(g, program_z, voxel_z)
             inter_edges, missing_edges, gen_edges = check_connectivity(g, max_out_program_index, mask['hard'])
             total_inter += inter_edges.shape[1]
             total_program_edge += g.program_edge.shape[1]
@@ -136,11 +140,17 @@ def generate_multiple_outputs_from_batch(batch, variation_num, generator, raw_di
     device = device_ids[0]
     batch.to(device)
     with torch.no_grad():
-        z = torch.rand(tuple([batch.program_class_feature.shape[0], generator.noise_dim])).to(device)
-        if trunc < 1.0:
-            z.clamp_(min=-trunc, max=trunc)
 
-        out, soft_out, mask, att, max_out_program_index, pooled_program_feature_from_voxel = generator(batch, z)
+        program_z_shape = [batch.program_class_feature.shape[0], generator.noise_dim]
+        program_z = torch.rand(tuple(program_z_shape)).to(device)
+        voxel_z_shape = [batch.voxel_feature.shape[0], generator.noise_dim]
+        voxel_z = torch.rand(tuple(voxel_z_shape)).to(device)
+        if trunc < 1.0:
+            program_z.clamp_(min=-trunc, max=trunc)
+            voxel_z.clamp_(min=-trunc, max=trunc)
+
+        batch.to(device)
+        out, soft_out, mask, att, max_out_program_index = generator(batch, program_z, voxel_z)
 
         normalized_program_class_weight, normalized_program_weight, FAR = get_program_ratio(batch, att["hard"], mask["hard"], area_index_in_voxel_feature=6)
         save_output(variation_num, batch, normalized_program_class_weight, normalized_program_weight, FAR, max_out_program_index, out, follow_batch,

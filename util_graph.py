@@ -138,7 +138,10 @@ def rebatch_for_multi_gpu(batch, device_ids, follow_batch, *args):
         for arg, key in zip(args, rebatch_type_key):
             mini_arg = arg.narrow(data.__cat_dim__(key, None), batch.__slices__[key][start], batch.__slices__[key][end] - batch.__slices__[key][start])
             placeholder.append(mini_arg)
+        try:
             placeholder = [ele.to(device_id) for ele in placeholder]
+        except:
+            pass
         ret.append(tuple(placeholder))
     return ret
 

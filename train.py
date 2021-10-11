@@ -42,11 +42,13 @@ writer_train = SummaryWriter(log_dir=os.path.join(run_dir, run_id))
 data_fname_list = sorted(os.listdir(args.train_data_dir))
 follow_batch = ['program_target_ratio', 'program_class_feature', 'voxel_feature']
 train_size = args.train_size//args.batch_size * args.batch_size
-print("Total %d data: %d train / %d test" % (len(data_fname_list), train_size, len(data_fname_list)-train_size))
+test_size = args.test_size//args.batch_size * args.batch_size
+# print("Total %d data: %d train / %d test" % (len(data_fname_list), train_size, len(data_fname_list)-train_size))
+print("Total %d data: %d train / %d test" % (len(data_fname_list), train_size, test_size))
 
 train_data_list = LargeFilenameDataset(args.train_data_dir, data_fname_list[:train_size])
 train_data_loader = DataLoader(train_data_list,  follow_batch=follow_batch, batch_size=args.batch_size, shuffle=True, num_workers=args.n_cpu)
-test_data_list = [torch.load(os.path.join(args.train_data_dir, fname)) for fname in data_fname_list[train_size:]]
+test_data_list = [torch.load(os.path.join(args.train_data_dir, fname)) for fname in data_fname_list[train_size:train_size + test_size]]
 test_data_loader = DataLoader(test_data_list, follow_batch=follow_batch, batch_size=20, shuffle=False, num_workers=args.n_cpu)
 
 variation_test_data1 = torch.load(os.path.join(args.train_data_dir, data_fname_list[args.variation_eval_id1]))

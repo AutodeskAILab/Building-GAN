@@ -10,7 +10,7 @@ import torch
 from Data.GraphConstructor import  GraphConstructor
 import os
 
-raw_data_dir = "6types-raw_data/sum"
+raw_data_dir = "6types-raw_data"
 output_dir = "6types-processed_data"
 global_graph_dir = os.path.join(raw_data_dir, "global_graph_data")
 local_graph_dir = os.path.join(raw_data_dir, "local_graph_data")

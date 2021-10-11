@@ -1,4 +1,14 @@
 /Data/6types-raw_data/
+/Data/6types-processed_data/
+/Data/6types-raw_data_/
+/Data/6types-processed_data_/
+/Data/6types-raw_data__/
+/Data/6types-processed_data__/
+/Data/__pycache__/
+/Model/__pycache__/
 /runs/*
 !/runs/iccv2021/
 /.idea/
+/inference*/
+/__pycache__/
+inference_10k.py

@@ -8,9 +8,10 @@ Code and instructions for our paper:
 Data
 ------
 - Download the dataset [here](). 
-- Put the `raw-data` and `processed data` under the folder `6types-raw_data/sum` and `6types-processed_data`.
+- Put the subfolders and files in `raw-data` under the folder `6types-raw_data`.
+- Run `Data/process_data.py` to process the raw data.
 
-For detail about how the raw data are processed, please refer the `Data/process_data.py`.  
+For the detail about how the raw data are processed, please refer the `Data/process_data.py`.  
 
 In the dataset, each volumetric design comprises three json files:
 - Global Graph: contains the FAR, program ratios, and the associated rooms for each program type. 
