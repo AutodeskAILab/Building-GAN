@@ -5,9 +5,9 @@ Code and instructions for our paper:
 
 [Building-GAN: Graph-Conditioned Architectural Volumetric Design Generation](https://arxiv.org/abs/2104.13316), ICCV 2021.
 
-<img src="https://github.com/AutodeskAILab/Building-GAN/blob/master/images/Building-GAN.png" width=80%>
+<img src="https://github.com/AutodeskAILab/Building-GAN/blob/master/images/Building-GAN.png">
 
-Volumetric Design
+Volumetric Design Process
 -----
 <img src="https://github.com/AutodeskAILab/Building-GAN/blob/master/images/Volumetric_Design.png">
 
