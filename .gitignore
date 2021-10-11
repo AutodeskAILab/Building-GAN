@@ -1,1 +1,4 @@
 /Data/6types-raw_data/
+/runs/*
+!/runs/iccv2021/
+/.idea/
