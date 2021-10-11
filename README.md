@@ -32,7 +32,7 @@ Training models
 
 For training a model from scratch, please follow the steps below:
 - Follow the steps in Data section.
-- run ```python main.py ```. Customized arguments can be set according to ```train_args.py```. 
+- run ```python train.py ```. Customized arguments can be set according to ```train_args.py```. 
 - Check out ```output``` and ```checkpoints``` folders for intermediate outputs and checkpoints, respectively. They are under the ```runs/run_id/``` where run_id is the serial number of the
  experiment. 
 
