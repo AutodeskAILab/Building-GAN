@@ -13,7 +13,7 @@ Volumetric Design Process
 
 Data
 ------
-- Download the dataset [here](https://building-gan-dataset.s3.us-west-2.amazonaws.com/v1/6types-raw_data.zip). 
+- Download the dataset [here](https://d271velnk8wqmg.cloudfront.net/6types-raw_data.zip). 
 - Put the subfolders and files in `raw-data` under the folder `6types-raw_data`.
 - Run `Data/process_data.py` to process the raw data.
 
