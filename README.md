@@ -60,8 +60,9 @@ Citation
 
 Contact
 ------
-If you have any question, feel free to contact Chin-Yi Cheng at <chin-yi.cheng@autodesk.com> or Kai-Hung Chang at <kai-hung.chang@autodesk.com>
-.
+Unfortunately this repo is no longer actively maintained. 
+If you have any question, feel free to contact Chin-Yi Cheng @chinyich or Kai-Hung Chang @kaihungc1993
+
 
 ## License
 Shield: [![CC BY-NC-SA 4.0][cc-by-nc-sa-shield]][cc-by-nc-sa]
