@@ -42,6 +42,11 @@ For training a model from scratch, please follow the steps below:
 - Check out ```output``` and ```checkpoints``` folders for intermediate outputs and checkpoints, respectively. They are under the ```runs/run_id/``` where run_id is the serial number of the
  experiment. 
 
+Requirements
+------
+- PyTorch >= 1.7.0
+- PyTorch Geometric 1.6.2
+
 Citation
 ------
 ```
